@@ -10,10 +10,14 @@ const studentSchema= new Schema({
         type:String,
         required:true
     },
-    SpireID: {
-        type:String,
-        required: true
-    }
+    Courses:[
+        [
+            {
+                CourseName : String,
+                Grade : String
+            }
+        ]
+    ]
 
 })
 
