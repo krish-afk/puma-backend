@@ -1,21 +1,21 @@
-const { MongoClient } = require("mongodb");
-exports.getClasses=async(req,res)=>{
-    
-    // Replace the uri string with your connection string.
-    const uri = "mongodb+srv://krishaang0191:franklin123@puma-cluster.idynkdh.mongodb.net/?retryWrites=true&w=majority&appName=PUMA-cluster";
-    const client = new MongoClient(uri);
-      try {
-        const database = client.db('Puma');
-        const courses = database.collection('Course');
-        // Query for a movie that has the title 'Back to the Future'
-        const query = { searchName: req.query.course };
-        const classes = await courses.findOne(query);
-        console.log(classes);
-        res.json({courseInfo:classes})
-      } finally {
-        // Ensures that the client will close when you finish/error
-        await client.close();
+const Course= require('../models/course')
+const mongoose= require('mongoose')
+
+exports.getClasses=async(req,res)=>{  
+    try {
+      // Find the course by searchName
+      const query = { searchName: req.query.course };
+      const course = await Course.findOne(query);
+      console.log(course)
+      if (!course) {
+          return res.status(404).json({ message: "Course not found" });
       }
+      return res.json(course);
+  } catch (error) {
+      // Handle errors
+      console.error("Error:", error);
+      return res.status(500).json({ message: "Internal Server Error" });
+  }
     
    
     
