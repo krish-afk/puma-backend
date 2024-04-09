@@ -6,7 +6,8 @@ exports.createUser= async(req,res)=>{
     const newStudent = new Student({
         SpireID,
         Username,
-        Password
+        Password,
+        Transcript
      },{ versionKey: false });  
      try {
         // Save the new student to the database

@@ -4,6 +4,18 @@ const course= require('./routes/classes')
 const student= require('./routes/students')
 const bodyParser=require('body-parser');
 const mongoose= require('mongoose')
+const transcript = require('./uploadTranscript.js'); 
+
+
+
+
+app.use((req,res,next)=>{
+    res.setHeader('Access-control-allow-Origin','*')
+    res.setHeader('Access-control-allow-Methods','GET, POST , PUT,DELETE')
+    res.setHeader('Access-control-allow-Headers','Content-Type, Authorization')
+    next();
+});
+
 
 app.use((req,res,next)=>{
     res.setHeader('Access-control-allow-Origin','*')
@@ -15,6 +27,7 @@ app.use((req,res,next)=>{
 app.use(bodyParser.json());
 app.use(course)
 app.use(student)
+app.use(transcript);
 
 // app.listen('8000',()=>{
 //             console.log("Backend is listening at port 8000")
