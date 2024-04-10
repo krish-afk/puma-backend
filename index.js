@@ -4,8 +4,8 @@ const course= require('./routes/classes')
 const student= require('./routes/students')
 const bodyParser=require('body-parser');
 const mongoose= require('mongoose')
-const transcript = require('./uploadTranscript.js'); 
 
+const transcriptRouter = require('./routes/transcript');
 
 
 
@@ -27,7 +27,7 @@ app.use((req,res,next)=>{
 app.use(bodyParser.json());
 app.use(course)
 app.use(student)
-app.use(transcript);
+app.use(transcriptRouter);
 
 // app.listen('8000',()=>{
 //             console.log("Backend is listening at port 8000")

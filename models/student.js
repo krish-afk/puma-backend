@@ -12,13 +12,11 @@ const studentSchema= new Schema({
     },
 
     Transcript :[
-        [
             {
                 CourseName : String,
                 Grade : String
             }
         ]
-    ]
 
 })
 
