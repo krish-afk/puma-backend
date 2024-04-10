@@ -1,7 +1,7 @@
 
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
-const Student = require('../models/students.js');
+const Student = require('../models/student.js');
 
 const upload = multer();
 
@@ -15,7 +15,7 @@ const extractTextFromPDF = async (fileBuffer) => {
     }
 };
 
-exports.uploadTranscript = async (req, res) => {
+const uploadTranscript = async (req, res) => {
     // username is now part of the form data, not URL parameters
         const fileBuffer = req.file.buffer;
         const username = req.body.username;
