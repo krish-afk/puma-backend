@@ -154,17 +154,18 @@ const uploadTranscript = async (req, res) => {
         }
     });
 
-     // Find the student and update them with the new transcript
+   
+     //Find the student and update them with the new transcript
      const updatedStudent = await Student.findOneAndUpdate(
-        { username: username }, // find the student by their username
-        { $push: { Transcript: { $each: transcript } } }, // push the new transcript data to the transcripts array
-        { new: true } // return the updated document
+        { Username: username },
+        { $set: { Transcript: transcript }}, // Use $push to add the transcript array to the Transcript field
+        { new: true }
     );
 
     if (updatedStudent) {
         res.json({ message: 'Transcript added successfully', student: updatedStudent });
     } else {
-        res.status(404).send({ message: 'Student not found' });
+        res.status(404).send({ message: 'Student not found'+ username });
     }
         
     } catch (error) {

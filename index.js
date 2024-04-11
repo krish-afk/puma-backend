@@ -4,7 +4,6 @@ const course= require('./routes/classes')
 const student= require('./routes/students')
 const bodyParser=require('body-parser');
 const mongoose= require('mongoose')
-
 const transcriptRouter = require('./routes/transcript');
 
 
@@ -25,13 +24,11 @@ app.use((req,res,next)=>{
 });
 
 app.use(bodyParser.json());
-app.use(course)
-app.use(student)
-app.use(transcriptRouter);
+app.use('/courses', course);  // Now, all routes in `course` will start with `/courses`
+app.use('/students', student);  // Routes in `student` will start with `/students`
+app.use('/transcripts', transcriptRouter);  // Similarly, transcript routes will start with `/transcripts`
 
-// app.listen('8000',()=>{
-//             console.log("Backend is listening at port 8000")
-//  })
+
 
 mongoose.set('debug', true);
 
