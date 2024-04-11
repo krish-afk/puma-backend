@@ -154,7 +154,6 @@ const uploadTranscript = async (req, res) => {
         }
     });
 
-   
      //Find the student and update them with the new transcript
      const updatedStudent = await Student.findOneAndUpdate(
         { Username: username },
