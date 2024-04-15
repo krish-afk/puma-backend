@@ -10,14 +10,13 @@ const studentSchema= new Schema({
         type:String,
         required:true
     },
-    Courses:[
-        [
+
+    Transcript :[
             {
-                CourseName : String,
-                Grade : String
+                name: String,
+                grade: String
             }
         ]
-    ]
 
 })
 
