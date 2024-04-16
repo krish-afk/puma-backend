@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { uploadTranscript } = require('../controllers/uploadTranscript.js');
+const controller = require('../controllers/uploadTranscript.js');
 
 
-router.post('/upload', uploadTranscript);
+router.post('/upload', controller.uploadTranscript);
 
 module.exports = router;
 
