@@ -34,3 +34,6 @@ exports.authenticateUser= async(req,res)=>{
     return res.status(401).json({message:"Incorrect Password"})
 
 }
+
+
+

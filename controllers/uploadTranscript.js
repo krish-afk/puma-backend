@@ -1,9 +1,6 @@
-
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const Student = require('../models/student.js');
-
-const upload = multer();
 
 const extractTextFromPDF = async (fileBuffer) => {
     try {
@@ -17,30 +14,68 @@ const extractTextFromPDF = async (fileBuffer) => {
 
 const uploadTranscript = async (req, res) => {
     // username is now part of the form data, not URL parameters
-        const fileBuffer = req.file.buffer;
-        const username = req.body.username;
-    
+    console.log("Request received for uploading transcript");
+    if (!req.file) {
+        console.log("No file uploaded");
+        return res.status(400).send({ message: 'No file was uploaded.' });
+    }
+
+    const fileBuffer = req.file.buffer;
+    const username = req.body.username;
+
+    console.log(`Received file for user: ${username}, file size: ${req.file.size} bytes`);
+
     if (!fileBuffer) {
+        console.log("File buffer is empty");
         return res.status(400).send({ message: 'Please upload a file.' });
     }
 
+    console.log(`Processing upload for user: ${username}`);
+
     try {
+        console.log("Starting PDF text extraction");
         const text = await extractTextFromPDF(fileBuffer);
 
         if (!text) {
+            console.log("No text extracted from PDF");
             return res.status(500).send({ message: 'Could not extract text from PDF' });
         }
 
-       // Process the extracted text to find course names and grades
-    const lines = text.split('\n');
+        // Process the extracted text to find course names and grades
+        const transcript = processTranscript(text);
 
-    const courseCompsciLine = /COMPSCI\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/ //extracts only the course name and the associated grade
-    const courseCICSLine = /CICS\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/ //extracts only the course name and the associated grade
-    const courseMathLine = /MATH\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/ //extracts only the course name and the associated grade
-    const gradeForCoursesWithLettersInNums = /\d+\.\d+([A-Z])\d+\.\d+/ //handles courses with letters attached to course number
-    const gradeForJrYearWriting = /ENGLWRIT\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/ 
+        // Find the student and update them with the new transcript
+        const updatedStudent = await Student.findOneAndUpdate(
+            { Username: username },
+            { $set: { Transcript: transcript } },
+            { new: true }
+        );
+
+        if (updatedStudent) {
+            console.log(`Transcript added successfully for user: ${username}`);
+            res.json({ message: 'Transcript added successfully', student: updatedStudent });
+        } else {
+            console.log(`Student not found: ${username}`);
+            res.status(404).send({ message: 'Student not found: ' + username });
+        }
+        
+    } catch (error) {
+        console.error('Error processing upload:', error);
+        res.status(500).send({ message: 'Failed to process upload' });
+    }
+};
+
+function processTranscript(text) {
+    console.log("Starting transcript processing");
+    const lines = text.split('\n');
     const transcript = [];
-    
+
+    const courseCompsciLine = /COMPSCI\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
+    const courseCICSLine = /CICS\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
+    const courseMathLine = /MATH\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
+    const gradeForCoursesWithLettersInNums = /\d+\.\d+([A-Z])\d+\.\d+/;
+    const gradeForJrYearWriting = /ENGLWRIT\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
+
     lines.forEach(line => {
         console.log('Processing line:', line);
         const csMatch = line.match(courseCompsciLine);
@@ -154,26 +189,12 @@ const uploadTranscript = async (req, res) => {
         }
     });
 
-     //Find the student and update them with the new transcript
-     const updatedStudent = await Student.findOneAndUpdate(
-        { Username: username },
-        { $set: { Transcript: transcript }}, // Use $push to add the transcript array to the Transcript field
-        { new: true }
-    );
-
-    if (updatedStudent) {
-        res.json({ message: 'Transcript added successfully', student: updatedStudent });
-    } else {
-        res.status(404).send({ message: 'Student not found'+ username });
-    }
-        
-    } catch (error) {
-        console.error('Error processing upload:', error);
-        res.status(500).send({ message: 'Failed to process upload' });
-    }
-};
+    console.log("Transcript processing completed");
+    return transcript;
+}
 
 module.exports = {
     extractTextFromPDF,
     uploadTranscript
 };
+
