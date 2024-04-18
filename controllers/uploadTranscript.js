@@ -2,6 +2,7 @@ const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const Student = require('../models/student.js');
 
+
 const extractTextFromPDF = async (fileBuffer) => {
     try {
         const data = await pdfParse(fileBuffer);
@@ -201,8 +202,10 @@ function processTranscript(text) {
     return transcript;
 }
 
+
 module.exports = {
     extractTextFromPDF,
     uploadTranscript
 };
+
 

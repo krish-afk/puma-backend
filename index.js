@@ -7,7 +7,6 @@ const mongoose= require('mongoose')
 const transcriptRouter = require('./routes/transcript');
 const cors = require('cors');
 
-
 const corsOptions = {
     origin: ['http://localhost:3000'], // Allow specific origins
     credentials: true, // Allow cookies to be sent with requests
