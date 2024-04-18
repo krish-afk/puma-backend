@@ -2,9 +2,8 @@ const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const Student = require('../models/student.js');
 
-const upload = multer();
 
-exports.extractTextFromPDF = async (fileBuffer) => {
+const extractTextFromPDF = async (fileBuffer) => {
     try {
         const data = await pdfParse(fileBuffer);
         return data.text;
@@ -14,33 +13,70 @@ exports.extractTextFromPDF = async (fileBuffer) => {
     }
 };
 
-exports.uploadTranscript = async (req, res) => {
+const uploadTranscript = async (req, res) => {
     // username is now part of the form data, not URL parameters
-    console.log(req.body)
-    const fileBuffer = req.body.file.buffer;
+    console.log("Request received for uploading transcript");
+    if (!req.file) {
+        console.log("No file uploaded");
+        return res.status(400).send({ message: 'No file was uploaded.' });
+    }
+
+    const fileBuffer = req.file.buffer;
     const username = req.body.username;
-    
+
+    console.log(`Received file for user: ${username}, file size: ${req.file.size} bytes`);
+
     if (!fileBuffer) {
+        console.log("File buffer is empty");
         return res.status(400).send({ message: 'Please upload a file.' });
     }
 
+    console.log(`Processing upload for user: ${username}`);
+
     try {
+        console.log("Starting PDF text extraction");
         const text = await extractTextFromPDF(fileBuffer);
 
         if (!text) {
+            console.log("No text extracted from PDF");
             return res.status(500).send({ message: 'Could not extract text from PDF' });
         }
 
-       // Process the extracted text to find course names and grades
-    const lines = text.split('\n');
+        // Process the extracted text to find course names and grades
+        const transcript = processTranscript(text);
 
-    const courseCompsciLine = /COMPSCI\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/ //extracts only the course name and the associated grade
-    const courseCICSLine = /CICS\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/ //extracts only the course name and the associated grade
-    const courseMathLine = /MATH\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/ //extracts only the course name and the associated grade
-    const gradeForCoursesWithLettersInNums = /\d+\.\d+([A-Z])\d+\.\d+/ //handles courses with letters attached to course number
-    const gradeForJrYearWriting = /ENGLWRIT\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/ 
+        // Find the student and update them with the new transcript
+        const updatedStudent = await Student.findOneAndUpdate(
+            { Username: username },
+            { $set: { Transcript: transcript } },
+            { new: true }
+        );
+
+        if (updatedStudent) {
+            console.log(`Transcript added successfully for user: ${username}`);
+            res.json({ message: 'Transcript added successfully', student: updatedStudent });
+        } else {
+            console.log(`Student not found: ${username}`);
+            res.status(404).send({ message: 'Student not found: ' + username });
+        }
+        
+    } catch (error) {
+        console.error('Error processing upload:', error);
+        res.status(500).send({ message: 'Failed to process upload' });
+    }
+};
+
+function processTranscript(text) {
+    console.log("Starting transcript processing");
+    const lines = text.split('\n');
     const transcript = [];
-    
+
+    const courseCompsciLine = /COMPSCI\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
+    const courseCICSLine = /CICS\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
+    const courseMathLine = /MATH\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
+    const gradeForCoursesWithLettersInNums = /\d+\.\d+([A-Z][\+-]?)\d+\.\d+/;
+    const gradeForJrYearWriting = /ENGLWRIT\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
+
     lines.forEach(line => {
         console.log('Processing line:', line);
         const csMatch = line.match(courseCompsciLine);
@@ -48,9 +84,10 @@ exports.uploadTranscript = async (req, res) => {
         const gradeMatch = line.match(gradeForCoursesWithLettersInNums);
         const cicsMatch = line.match(courseCICSLine);
         const englMatch = line.match(gradeForJrYearWriting);
-
+        console.log(line)
         if(englMatch){
-            if(csMatch[1] === '112'){
+            if(englMatch[1] === '112'){
+                console.log(gradeMatch)
                 transcript.push({
                     name: "ENGLWRIT112",
                     grade: gradeMatch[1]
@@ -68,21 +105,22 @@ exports.uploadTranscript = async (req, res) => {
 
             else if(csMatch[1] === '186'){
                 transcript.push({
-                    name: "CS160",
+                    name: "CICS160",
                     grade: gradeMatch[1]
                 });
             }
 
             else if(csMatch[1] === '187'){
+                console.log(gradeMatch)
                 transcript.push({
-                    name: "CS210",
+                    name: "CICS210",
                     grade: gradeMatch[1]
                 });
             }
 
             else if(csMatch[1] === '121'){
                 transcript.push({
-                    name: "CS110",
+                    name: "CICS110",
                     grade: gradeMatch[1]
                 });
             }
@@ -124,11 +162,16 @@ exports.uploadTranscript = async (req, res) => {
         }
 
         if(cicsMatch){
+            console.log(cicsMatch)
             if(cicsMatch[1] === '291'){
                 transcript.push({
                     name: "CICS91T",
                     grade: gradeMatch[1]
                 });
+            }
+
+            else if(cicsMatch[1] === '191FY1'){
+                return
             }
 
             else if(cicsMatch[1] === '298'){
@@ -140,13 +183,14 @@ exports.uploadTranscript = async (req, res) => {
             
             else{
                 transcript.push({
-                    name: `CICS${csMatch[1]}`,
-                    grade: csMatch[2]
+                    name: `CICS${cicsMatch[1]}`,
+                    grade: cicsMatch[2]
                 });
             }
         }
     
         if (mathMatch) {
+            console.log(mathMatch)
             transcript.push({
                 name: `MATH${mathMatch[1]}`,
                 grade: mathMatch[2]
@@ -154,26 +198,14 @@ exports.uploadTranscript = async (req, res) => {
         }
     });
 
-     //Find the student and update them with the new transcript
-     const updatedStudent = await Student.findOneAndUpdate(
-        { Username: username },
-        { $set: { Transcript: transcript }}, // Use $push to add the transcript array to the Transcript field
-        { new: true }
-    );
+    console.log("Transcript processing completed");
+    return transcript;
+}
 
-    if (updatedStudent) {
-        res.json({ message: 'Transcript added successfully', student: updatedStudent });
-    } else {
-        res.status(404).send({ message: 'Student not found'+ username });
-    }
-        
-    } catch (error) {
-        console.error('Error processing upload:', error);
-        res.status(500).send({ message: 'Failed to process upload' });
-    }
+
+module.exports = {
+    extractTextFromPDF,
+    uploadTranscript
 };
 
-// module.exports = {
-//     extractTextFromPDF,
-//     uploadTranscript
-// };
+
