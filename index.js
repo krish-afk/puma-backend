@@ -8,7 +8,7 @@ const transcriptRouter = require('./routes/transcript');
 const cors = require('cors');
 
 const corsOptions = {
-    origin: ['http://localhost:3000'], // Allow specific origins
+    origin: ['https://main.d2jp4nrw4yv5qf.amplifyapp.com/'], // Allow specific origins
     credentials: true, // Allow cookies to be sent with requests
     methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH']
 };
