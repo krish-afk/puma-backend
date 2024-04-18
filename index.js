@@ -7,28 +7,28 @@ const mongoose= require('mongoose')
 const transcriptRouter = require('./routes/transcript');
 const cors = require('cors');
 
-const corsOptions = {
-    origin: ['https://main.d2jp4nrw4yv5qf.amplifyapp.com/'], // Allow specific origins
-    credentials: true, // Allow cookies to be sent with requests
-    methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH']
-};
-console.log("CORS configured");
+// const corsOptions = {
+//     origin: ['https://main.d2jp4nrw4yv5qf.amplifyapp.com/'], // Allow specific origins
+//     credentials: true, // Allow cookies to be sent with requests
+//     methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH']
+// };
+// console.log("CORS configured");
 
-// Log requests for debugging
+// // Log requests for debugging
 app.use((req, res, next) => {
     console.log(`Incoming request: ${req.method} ${req.url}`);
     next();
 });
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 
-// app.use((req,res,next)=>{
-//     res.setHeader('Access-Control-Allow-Origin','*')
-//     res.setHeader('Access-Control-Allow-Methods','GET, POST , PUT,DELETE')
-//     res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization')
-//     console.log("CORS headers set")
-//     next();
-// });
+app.use((req,res,next)=>{
+    res.setHeader('Access-Control-Allow-Origin','*')
+    res.setHeader('Access-Control-Allow-Methods','GET, POST , PUT,DELETE')
+    res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization')
+    console.log("CORS headers set")
+    next();
+});
 
 
 
