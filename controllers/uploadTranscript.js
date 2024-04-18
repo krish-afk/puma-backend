@@ -73,7 +73,7 @@ function processTranscript(text) {
     const courseCompsciLine = /COMPSCI\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
     const courseCICSLine = /CICS\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
     const courseMathLine = /MATH\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
-    const gradeForCoursesWithLettersInNums = /\d+\.\d+([A-Z])\d+\.\d+/;
+    const gradeForCoursesWithLettersInNums = /\d+\.\d+([A-Z][\+-]?)\d+\.\d+/;
     const gradeForJrYearWriting = /ENGLWRIT\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
 
     lines.forEach(line => {
@@ -83,9 +83,10 @@ function processTranscript(text) {
         const gradeMatch = line.match(gradeForCoursesWithLettersInNums);
         const cicsMatch = line.match(courseCICSLine);
         const englMatch = line.match(gradeForJrYearWriting);
-
+        console.log(line)
         if(englMatch){
-            if(csMatch[1] === '112'){
+            if(englMatch[1] === '112'){
+                console.log(gradeMatch)
                 transcript.push({
                     name: "ENGLWRIT112",
                     grade: gradeMatch[1]
@@ -103,21 +104,22 @@ function processTranscript(text) {
 
             else if(csMatch[1] === '186'){
                 transcript.push({
-                    name: "CS160",
+                    name: "CICS160",
                     grade: gradeMatch[1]
                 });
             }
 
             else if(csMatch[1] === '187'){
+                console.log(gradeMatch)
                 transcript.push({
-                    name: "CS210",
+                    name: "CICS210",
                     grade: gradeMatch[1]
                 });
             }
 
             else if(csMatch[1] === '121'){
                 transcript.push({
-                    name: "CS110",
+                    name: "CICS110",
                     grade: gradeMatch[1]
                 });
             }
@@ -159,11 +161,16 @@ function processTranscript(text) {
         }
 
         if(cicsMatch){
+            console.log(cicsMatch)
             if(cicsMatch[1] === '291'){
                 transcript.push({
                     name: "CICS91T",
                     grade: gradeMatch[1]
                 });
+            }
+
+            else if(cicsMatch[1] === '191FY1'){
+                return
             }
 
             else if(cicsMatch[1] === '298'){
@@ -175,13 +182,14 @@ function processTranscript(text) {
             
             else{
                 transcript.push({
-                    name: `CICS${csMatch[1]}`,
-                    grade: csMatch[2]
+                    name: `CICS${cicsMatch[1]}`,
+                    grade: cicsMatch[2]
                 });
             }
         }
     
         if (mathMatch) {
+            console.log(mathMatch)
             transcript.push({
                 name: `MATH${mathMatch[1]}`,
                 grade: mathMatch[2]
