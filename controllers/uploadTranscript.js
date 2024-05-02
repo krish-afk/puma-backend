@@ -3,9 +3,11 @@ const pdfParse = require('pdf-parse');
 const Student = require('../models/student.js');
 
 
+console.log("About to call extractTextFromPDF");
 const extractTextFromPDF = async (fileBuffer) => {
     try {
-        const data = await pdfParse(fileBuffer);
+        const data = await pdfParse.default(fileBuffer);
+        console.log("extractTextFromPDF output:", data.text);
         return data.text;
     } catch (error) {
         console.error('Error extracting text from PDF:', error);
@@ -16,11 +18,20 @@ const extractTextFromPDF = async (fileBuffer) => {
 const uploadTranscript = async (req, res) => {
     // username is now part of the form data, not URL parameters
     console.log("Request received for uploading transcript");
-    if (!req.file) {
+   
+    if (!req.body) {
+        console.log(req.body)
+        return res.status(400).send({ message: 'Request body is missing' });
+    }
+
+    if (!req.body.username) {
+        return res.status(400).send({ message: 'Username is missing' });
+    }
+
+    if  (!req.file){
         console.log("No file uploaded");
         return res.status(400).send({ message: 'No file was uploaded.' });
     }
-
     const fileBuffer = req.file.buffer;
     const username = req.body.username;
 
@@ -170,7 +181,7 @@ function processTranscript(text) {
                 });
             }
 
-            else if(cicsMatch[1] === '191FY1'){
+            else if (cicsMatch[1] === '191FY1') {
                 return
             }
 
