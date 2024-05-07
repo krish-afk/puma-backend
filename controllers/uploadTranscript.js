@@ -82,11 +82,11 @@ function processTranscript(text) {
     const lines = text.split('\n');
     const transcript = [];
 
-    const courseCompsciLine = /COMPSCI\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
-    const courseCICSLine = /CICS\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
-    const courseMathLine = /MATH\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
-    const gradeForCoursesWithLettersInNums = /\d+\.\d+([A-Z][\+-]?)\d+\.\d+/;
-    const gradeForJrYearWriting = /ENGLWRIT\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
+    const courseCompsciLine = /COMPSCI\s+([A-Z]?\d+).*?([A-FP][+-]?)(?=\s|\d)/;
+    const courseCICSLine = /CICS\s+([A-Z]?\d+).*?([A-FP][+-]?)(?=\s|\d)/;
+    const courseMathLine = /MATH\s+([A-Z]?\d+).*?([A-FP][+-]?)(?=\s|\d)/;
+    const gradeForCoursesWithLettersInNums = /\d+\.\d+([A-ZP][\+-]?)\d+\.\d+/;
+    const gradeForJrYearWriting = /ENGLWRIT\s+([A-Z]?\d+).*?([A-FP][+-]?)(?=\s|\d)/;
 
     lines.forEach(line => {
         console.log('Processing line:', line);
@@ -216,7 +216,8 @@ function processTranscript(text) {
 
 module.exports = {
     extractTextFromPDF,
-    uploadTranscript
+    uploadTranscript,
+    processTranscript
 };
 
 
