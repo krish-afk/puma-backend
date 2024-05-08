@@ -3,9 +3,11 @@ const pdfParse = require('pdf-parse');
 const Student = require('../models/student.js');
 
 
+console.log("About to call extractTextFromPDF");
 const extractTextFromPDF = async (fileBuffer) => {
     try {
-        const data = await pdfParse(fileBuffer);
+        const data = await pdfParse.default(fileBuffer);
+        console.log("extractTextFromPDF output:", data.text);
         return data.text;
     } catch (error) {
         console.error('Error extracting text from PDF:', error);
@@ -16,11 +18,20 @@ const extractTextFromPDF = async (fileBuffer) => {
 const uploadTranscript = async (req, res) => {
     // username is now part of the form data, not URL parameters
     console.log("Request received for uploading transcript");
-    if (!req.file) {
+   
+    if (!req.body) {
+        console.log(req.body)
+        return res.status(400).send({ message: 'Request body is missing' });
+    }
+
+    if (!req.body.username) {
+        return res.status(400).send({ message: 'Username is missing' });
+    }
+
+    if  (!req.file){
         console.log("No file uploaded");
         return res.status(400).send({ message: 'No file was uploaded.' });
     }
-
     const fileBuffer = req.file.buffer;
     const username = req.body.username;
 
@@ -71,11 +82,11 @@ function processTranscript(text) {
     const lines = text.split('\n');
     const transcript = [];
 
-    const courseCompsciLine = /COMPSCI\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
-    const courseCICSLine = /CICS\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
-    const courseMathLine = /MATH\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
-    const gradeForCoursesWithLettersInNums = /\d+\.\d+([A-Z][\+-]?)\d+\.\d+/;
-    const gradeForJrYearWriting = /ENGLWRIT\s+([A-Z]?\d+).*?([A-F][+-]?)(?=\s|\d)/;
+    const courseCompsciLine = /COMPSCI\s+([A-Z]?\d+).*?([A-FP][+-]?)(?=\s|\d)/;
+    const courseCICSLine = /CICS\s+([A-Z]?\d+).*?([A-FP][+-]?)(?=\s|\d)/;
+    const courseMathLine = /MATH\s+([A-Z]?\d+).*?([A-FP][+-]?)(?=\s|\d)/;
+    const gradeForCoursesWithLettersInNums = /(COMPSCI|CICS)\s+(\d+[A-Z]?)\s+.*?\s+\d+\.\d+\s+\d+\.\d+\s+([A-F][+-]?)/;
+    const gradeForJrYearWriting = /ENGLWRIT\s+([A-Z]?\d+).*?([A-FP][+-]?)(?=\s|\d)/;
 
     lines.forEach(line => {
         console.log('Processing line:', line);
@@ -87,10 +98,9 @@ function processTranscript(text) {
         console.log(line)
         if(englMatch){
             if(englMatch[1] === '112'){
-                console.log(gradeMatch)
                 transcript.push({
                     name: "ENGLWRIT112",
-                    grade: gradeMatch[1]
+                    grade: englMatch[2]
             });
             }
         }
@@ -99,14 +109,14 @@ function processTranscript(text) {
             if(csMatch[1] === '198'){
                 transcript.push({
                     name: "CS198C",
-                    grade: gradeMatch[1]
+                    grade: gradeMatch[3]
                 });
             }
 
             else if(csMatch[1] === '186'){
                 transcript.push({
                     name: "CICS160",
-                    grade: gradeMatch[1]
+                    grade: csMatch[2]
                 });
             }
 
@@ -114,42 +124,42 @@ function processTranscript(text) {
                 console.log(gradeMatch)
                 transcript.push({
                     name: "CICS210",
-                    grade: gradeMatch[1]
+                    grade: csMatch[2]
                 });
             }
 
             else if(csMatch[1] === '121'){
                 transcript.push({
                     name: "CICS110",
-                    grade: gradeMatch[1]
+                    grade: csMatch[2]
                 });
             }
             
             else if(csMatch[1] === '490'){
                 transcript.push({
                     name: "CS490Q",
-                    grade: gradeMatch[1]
+                    grade: gradeMatch[3]
                 });
             }
     
             else if(csMatch[1] === '590'){
                 transcript.push({
                     name: "CS590X",
-                    grade: gradeMatch[1]
+                    grade: gradeMatch[3]
                 });
             }
     
             else if(csMatch[1] === '596'){
                 transcript.push({
                     name: "CS596E",
-                    grade: gradeMatch[1]
+                    grade: gradeMatch[3]
                 });
             }
     
             else if(csMatch[1] === '690'){
                 transcript.push({
                     name: "CS690K",
-                    grade: gradeMatch[1]
+                    grade: gradeMatch[3]
                 });
             }
     
@@ -166,18 +176,18 @@ function processTranscript(text) {
             if(cicsMatch[1] === '291'){
                 transcript.push({
                     name: "CICS91T",
-                    grade: gradeMatch[1]
+                    grade: gradeMatch[3]
                 });
             }
 
-            else if(cicsMatch[1] === '191FY1'){
+            else if (cicsMatch[1] === '191') {
                 return
             }
 
             else if(cicsMatch[1] === '298'){
                 transcript.push({
                     name: "CICS298A",
-                    grade: gradeMatch[1]
+                    grade: gradeMatch[3]
                 });
             }
             
@@ -205,7 +215,8 @@ function processTranscript(text) {
 
 module.exports = {
     extractTextFromPDF,
-    uploadTranscript
+    uploadTranscript,
+    processTranscript
 };
 
 
