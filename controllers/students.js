@@ -36,5 +36,22 @@ exports.authenticateUser= async(req,res)=>{
 }
 
 
-
+exports.getUser= async(req,res)=>{
+  console.log("HI")
+  try {
+    // Find the course by searchName
+    const query = { Username: req.query.username };
+    const student = await Student.findOne(query);
+    console.log(student)
+    if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+    }
+    return res.json(student);
+} catch (error) {
+    // Handle errors
+    console.error("Error:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+}
+  
+}
 
