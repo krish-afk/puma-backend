@@ -185,6 +185,7 @@ function processTranscript(text) {
             }
 
             else if(cicsMatch[1] === '298'){
+                console.log(gradeMatch)
                 transcript.push({
                     name: "CICS298A",
                     grade: gradeMatch[3]
