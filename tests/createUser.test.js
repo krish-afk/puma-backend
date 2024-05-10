@@ -1,3 +1,11 @@
+//purpose is to test each aspect of the  Createuser function in the student.js controller. Numerous functions are mocked so we can
+// ensure through unit testing that each one works on its own and together
+
+// to run these tests make sure npm is installed
+// make sure jest is installed as well: npm install --save-dev jest
+// now type npm test -- tests/createUser.test.js into command line and hit enter
+// to run all backend tests type npm test
+
 
 const mongoose = require('mongoose');
 const { createUser } = require('../controllers/students');
