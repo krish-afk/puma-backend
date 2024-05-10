@@ -1,3 +1,11 @@
+//purpose is to test each aspect of the  Createuser function in the student.js controller. Numerous functions are mocked so we can
+// ensure through unit testing that each one works on its own and together
+
+// to run these tests make sure npm is installed
+// make sure jest is installed as well: npm install --save-dev jest
+// now type npm test -- tests/createUser.test.js into command line and hit enter
+// to run all backend tests type npm test
+
 
 const mongoose = require('mongoose');
 const { createUser } = require('../controllers/students');
@@ -6,7 +14,7 @@ const { createUser } = require('../controllers/students');
 
 // This is a unit test just for the createUser function. This means to eliminate dependencies on other files and functions we used
 // a mock constructor and a mock database. The goal is to ensure that when the create user function is called and given mock data
-//that it sends the HTTP status code to `201 Created` whihc indicates a student has been successfully added to our database (201 is the common 
+//that it sends the HTTP status code to `201 Created` which indicates a student has been successfully added to our database (201 is the common 
 // server response to object creation). This status code confirms to the client that their request to create a new student was successful 
 //and resulted in the creation of that resource on the server. To test this we then check our mock data base and find he correct object
 
