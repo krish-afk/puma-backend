@@ -6,7 +6,7 @@ const Student = require('../models/student.js');
 console.log("About to call extractTextFromPDF");
 const extractTextFromPDF = async (fileBuffer) => {
     try {
-        const data = await pdfParse.default(fileBuffer);
+        const data = await pdfParse(fileBuffer);
         console.log("extractTextFromPDF output:", data.text);
         return data.text;
     } catch (error) {
