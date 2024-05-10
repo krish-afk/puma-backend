@@ -188,7 +188,7 @@ function processTranscript(text) {
                 console.log(gradeMatch)
                 transcript.push({
                     name: "CICS298A",
-                    grade: gradeMatch[3]
+                    grade: cicsMatch[2]
                 });
             }
             
