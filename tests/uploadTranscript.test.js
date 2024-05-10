@@ -1,14 +1,3 @@
-// Purpose is to test all aspects of uploading a transcript in the backend. These are mostly unit tests so many
-// functions are mocked that way we can ensure the functionality of each method. All special case classes were tested
-// and finally two large integration tests were performed to make sure the methods work properly with one another. See comments on each
-//section for more details
-
-
-//To run just this test file: make sure npm is installed on your machine if you are not sure type this in terminal: npm install
-// to test just this file run: npm test -- tests/UploadTranscript.test.js
-// to test all files in backend type npm test into terminal
-
-
 
 // this is a mock student in the database. Instead of interacting with mongodb we mock the calls to find one and update to return this mocked student object
 jest.mock('../models/student', () => ({
@@ -19,12 +8,11 @@ jest.mock('../models/student', () => ({
   })
 }));
 
-
 //instead of actually using pdf-parse and needing to pass it in a file we return a mocked version of what it would output
-jest.mock('pdf-parse', () => {
-  return jest.fn().mockImplementation((buffer) => Promise.resolve({ text: "This is some PDF text." }));
-});
-
+jest.mock('pdf-parse', () => ({ 
+  __esModule: true, // This might be necessary if your module uses ES6 imports
+  default: jest.fn(() => Promise.resolve({ text: "This is some PDF text." }))
+}));
 
 
   // imports the modules we are testing
@@ -57,11 +45,10 @@ const mockResponse = () => {
   return res;
 };
 
-
 describe('uploadTranscript', () => {
   beforeEach(() => {
     jest.clearAllMocks();  // Clear mocks between tests
-    pdfParse.mockImplementation(() => Promise.resolve({ text: "This is some PDF text." }));
+    pdfParse.default.mockImplementation(() => Promise.resolve({ text: "This is some PDF text." }));
   });
 
 
@@ -112,7 +99,7 @@ it('should return an error if username is missing', async () => {
 it('should return extracted text when pdfParse is successful', async () => {
   const result = await extractTextFromPDF(Buffer.from("dummy content")); //simulates binary data from the parse buffer, doesnt matter what the content is because pdf-parse is mocked
   expect(result).toBe("This is some PDF text."); // Update this to match the mock return value
-  expect(pdfParse).toHaveBeenCalledWith(expect.any(Buffer)); // Ensure it was called with a Buffer
+  expect(pdfParse.default).toHaveBeenCalledWith(expect.any(Buffer)); // Ensure it was called with a Buffer
 });
 
 
@@ -125,7 +112,7 @@ it('should handle errors from pdfParse when not successful', async () => {
 
   //this is a mock used only once for pdfParse to simulate what would happen if pdf-parse threw an error in transcriptUpload
   // the Promise.reject(new Error("Failed to parse PDF")) is an example of a promise being rejected and a possible error that could eb thrown with it
-  pdfParse.mockImplementationOnce(() => Promise.reject(new Error("Failed to parse PDF")));
+  pdfParse.default.mockImplementationOnce(() => Promise.reject(new Error("Failed to parse PDF")));
 
   const buffer = Buffer.from("dummy PDF data"); // simulates binary data from the parse buffer but does'nt matter because it'll reject here anyways
   const text = await extractTextFromPDF(buffer); //using the data it calls extract text from pdf which uses default pdfParse
@@ -314,7 +301,7 @@ describe('Full integration of uploadTranscript process', () => {
     const res = mockResponse();
 
     // Set up mocks
-    pdfParse.mockImplementation(() => Promise.resolve({ text: pdfContent }));
+    pdfParse.default.mockImplementation(() => Promise.resolve({ text: pdfContent }));
     Student.findOneAndUpdate.mockResolvedValue({
       _id: '123',
       username: 'testuser',
@@ -328,7 +315,7 @@ describe('Full integration of uploadTranscript process', () => {
     await uploadTranscript(req, res);
 
     // Verify that the text was extracted and processed
-    expect(pdfParse).toHaveBeenCalledWith(expect.any(Buffer));
+    expect(pdfParse.default).toHaveBeenCalledWith(expect.any(Buffer));
     expect(Student.findOneAndUpdate).toHaveBeenCalledWith(
       { Username: 'testuser' },
       { $set: { Transcript: expect.any(Array) } },
@@ -364,7 +351,7 @@ describe('Full integration of uploadTranscript with diverse courses', () => {
     const res = mockResponse();
 
     // Setup mocks
-    pdfParse.mockImplementation(() => Promise.resolve({ text: pdfContent }));
+    pdfParse.default.mockImplementation(() => Promise.resolve({ text: pdfContent }));
     Student.findOneAndUpdate.mockResolvedValue({
       _id: '123',
       username: 'testuser',
@@ -375,7 +362,7 @@ describe('Full integration of uploadTranscript with diverse courses', () => {
     await uploadTranscript(req, res);
 
     // Verify that the text was extracted and processed
-    expect(pdfParse).toHaveBeenCalledWith(expect.any(Buffer));
+    expect(pdfParse.default).toHaveBeenCalledWith(expect.any(Buffer));
     expect(Student.findOneAndUpdate).toHaveBeenCalledWith(
       { Username: 'testuser' },
       { $set: { Transcript: expect.any(Array) } },
